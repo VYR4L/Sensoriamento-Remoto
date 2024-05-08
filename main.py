@@ -8,23 +8,23 @@ import matplotlib.pyplot as plt
 ROOT_DIR = Path(__file__).parent.parent
 IMAGES_DIR = f'{ROOT_DIR}/images'
 
-with rasterio.open('L8_ldna_20200504.tif') as dataset:
+with rasterio.open('CBERS_Teste.tif') as dataset:
     mask = dataset.dataset_mask()
 
     band = dataset.read(1)
-    print(band)
-    print(band[dataset.height // 2, dataset.width // 2])
-    # plt.imshow(band, cmap='Greens')
+    print(band.shape)
+    # print(band[dataset.height // 2, dataset.width // 2])
+    # plt.imshow(band)
     # plt.colorbar()
     # plt.title(f'Banda')
-    # # plt.show()
+    # plt.show()
 
     # SPATIAL INDEXING
-    x, y = (dataset.bounds.left + 100, dataset.bounds.top - 50)
-    row, col = dataset.index(x, y)
-    print(row, col)
-    print(band[row, col])
-    print(dataset.xy(dataset.height//2, dataset.width//2))
+    # x, y = (dataset.bounds.left + 100, dataset.bounds.top - 50)
+    # row, col = dataset.index(x, y)
+    # print(row, col)
+    # print(band[row, col])
+    # print(dataset.xy(dataset.height//2, dataset.width//2))
 
     # CREATING DATA
     # x = np.linspace(-4.0, 4.0, 240)
@@ -51,10 +51,10 @@ with rasterio.open('L8_ldna_20200504.tif') as dataset:
     #     print(i, dtype)
     #
     # print(dataset.bounds)
-    X2, Y2 = dataset.transform * (0, 0)  # coordenadas espaciais (x, y)
-    Z2 = 10 * (Y2 - Y2)
-    contour = plt.contour(X2, Y2, Z2, colors=['blue', 'green', 'red'])
-    plt.clabel(contour, inline=True, fontsize=8)
-    plt.show()
+    # X2, Y2 = dataset.transform * (0, 0)  # coordenadas espaciais (x, y)
+    # Z2 = 10 * (Y2 - Y2)
+    # contour = plt.contour(X2, Y2, Z2, colors=['blue', 'green', 'red'])
+    # plt.clabel(contour, inline=True, fontsize=8)
+    # plt.show()
     # print(dataset.transform * (dataset.width, dataset.height))  # coordinate reference system (CRS)
     # print(dataset.crs)  #

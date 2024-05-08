@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="PBIC_conda" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="PBIC_conda" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="CONDA_sensoriamento_remoto" project-jdk-type="Python SDK" />
 </project>

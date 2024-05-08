@@ -1,7 +1,7 @@
 import rasterio
 
 with rasterio.open('L8_ldna_20200504.tif') as sourceset:
-    band_1 = sourceset.read(1)
+    band_1 = sourceset.read(5)
 
     profile = sourceset.profile
 

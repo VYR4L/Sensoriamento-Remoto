@@ -7,7 +7,10 @@ __pycache__/
 *.so
 
 # TIF files
-.tif
+*.tif
+
+# API File
+ee-fkzzanatt-ac9270b29327.json
 
 # Distribution / packaging
 .Python
