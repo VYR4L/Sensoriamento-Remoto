@@ -9,6 +9,9 @@ __pycache__/
 # TIF files
 *.tif
 
+# Old files
+.old
+
 # API File
 ee-fkzzanatt-ac9270b29327.json
 
