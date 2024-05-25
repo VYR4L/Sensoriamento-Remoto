@@ -1,22 +1,20 @@
-# Welcome to the spacial fusion app tutorial!
+# Bem-vindo ao tutorial do aplicativo de fusão espacial!
 
-First of all, check my GitHub repository for more info and/or sugestions: **https://github.com/VYR4L/Sensoriamento-Remoto**
+Antes de tudo, verifique meu repositório GitHub para mais informações e/ou sugestões: **https://github.com/VYR4L/Sensoriamento-Remoto**
 
-## Now, to the tutorial:
+## Agora, para o tutorial:
 
-1. Choose the fusion method.
+1. Se você ainda não baixou os arquivos .tif, clique no botão API, se já fez isso, pule para a etapa 3.
 
-2. If you don't have the .tif files downloaded yet, click the API button, if you already did it, skip to the 4 step.
-
-3. In the API screen, you'll need to:
-    * Enable your Google Earth Engine API;
-    * Import your API file;
-    * Inform your api email account;
-    * Insert the ID from the image;
-    * Choose the satellite (for now we just have CBERS and Landsat), then you'll insert the data and the size of the imagem that you want. You can resize and get a better slice of the terrain in **https://earthexplorer.usgs.gov/**
+2. Na tela da API, você precisará:
+    * Habilite sua API do Google Earth Engine;
+    * Importe seu arquivo API;
+    * Informe sua conta de e-mail da API;
+    * Insira o ID da imagem;
+    * Escolha o satélite (por enquanto só temos CBERS e Landsat), depois você irá inserir os dados e o tamanho da imagem que deseja. Você pode redimensionar e obter uma fatia melhor do terreno em **https://earthexplorer.usgs.gov/**
     
 
-4. You will need to import 2 images for both method: one for the multispectral image (bands 2 to 5 on Landsat and B1 to B4 on CBERS-4A) and one for the panchromatic band (band 8 on Landsat and P on CBERS-4A).
+3. Você precisará importar 2 imagens para ambos os métodos: uma para a imagem multiespectral (bandas 2 a 5 no Landsat e B1 a B4 no CBERS-4A) e uma para a banda pancromática (banda 8 no Landsat e P no CBERS- 4A).
 
-5. After that, you'll click in "Fuse images", a file will be generated and you'll choose where to save the file.
-That's it, you're ready to use the app!
+4. Após isso, você clicará no método de fusão que você deseja, um arquivo será gerado e você escolherá onde salvar o arquivo.
+É isso, você está pronto para usar o aplicativo!

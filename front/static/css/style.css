@@ -1,22 +1,126 @@
 /* style.css */
-QMainWindow {
-    background-color: #3193e4;
-}
-
-QPushButton {
-    background-color: #4CAF50;
+#OpenTutorialButton {
+    background-color: #0e1629;
     color: white;
     border-radius: 10px;
     padding: 10px;
     font-size: 16px;
 }
 
-QPushButton:hover {
+#OpenTutorialButton:hover {
     background-color: #45a049;
+    color: white;
 }
 
-QLabel {
-    color: #333;
-    font-size: 14px;
+#ApiSetupButton {
+    background-color: #0e1629;
+    color: white;
+    border-radius: 10px;
     padding: 10px;
+    font-size: 16px;
+}
+
+#ApiSetupButton:hover {
+    background-color: #45a049;
+    color: white;
+}
+
+#PCAFusionButton {
+    background-color: #0e1629;
+    color: white;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+#PCAFusionButton:hover {
+    background-color: #45a049;
+    color: white;
+}
+
+#ColorimetricFusionButton {
+    background-color: #0e1629;
+    color: white;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+#ColorimetricFusionButton:hover {
+    background-color: #45a049;
+    color: white;
+}
+
+#MultiSpectralButton {
+    background-color: #0e1629;
+    color: white;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+#MultiSpectralButton:hover {
+    background-color: #45a049;
+    color: white;
+}
+
+#PanCButton {
+    background-color: #0e1629;
+    color: white;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+#PanCButton {
+    background-color: #0e1629;
+    color: white;
+}
+
+#PanCButton:hover {
+    background-color: #45a049;
+    color: white;
+}
+
+#CloseButton {
+    background-color: #0e1629;
+    color: white;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+#CloseButton:hover {
+    background-color: #45a049;
+    color: white;
+}
+
+#ApiFileButton {
+    background-color: #0e1629;
+    color: white;
+}
+
+#ApiFileButton:hover {
+    background-color: #45a049;
+    color: white;
+}
+
+#OutputFolderButton {
+    background-color: #0e1629;
+    color: white;
+}
+
+#OutputFolderButton:hover {
+    background-color: #45a049;
+    color: white;
+}
+
+#ExecuteButton {
+    background-color: #0e1629;
+    color: white;
+}
+
+#ExecuteButton:hover {
+    background-color: #45a049;
+    color: white;
 }

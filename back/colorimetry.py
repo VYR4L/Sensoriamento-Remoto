@@ -30,10 +30,4 @@ def colorimetric_fusion(multispectral_path, panchromatic_path, output_path):
     fused_ds.GetRasterBand(1).WriteArray(fused_data)
     fused_ds = None
 
-    print("Fusão colorimétrica concluída. Imagem salva em:", output_path)
 
-# Exemplo de uso
-multispectral_path = 'multiespectral.tif'
-panchromatic_path = 'pancromatica.tif'
-output_path = 'fusao_colorimetrica.tif'
-colorimetric_fusion(multispectral_path, panchromatic_path, output_path)
