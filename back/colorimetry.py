@@ -28,13 +28,16 @@ def colorimetric_fusion(multispectral_path, panchromatic_path, output_path):
     b = multispectral_ds.GetRasterBand(1).ReadAsArray()  # Banda Azul
 
     # Ler a banda pancromática
-    panchromatic_data = panchromatic_ds.GetRasterBand(1).ReadAsArray()
+    pan = panchromatic_ds.GetRasterBand(1).ReadAsArray()
+
+    # Normalizar a banda pancromática
+    pan = pan / (pan.max() - pan.min()) * 255
 
     # Converter RGB para IHS
     i, h, s = rgb_to_ihs(r, g, b)
 
     # Substituir o componente de Intensidade pela banda pancromática
-    i = panchromatic_data
+    i = pan
 
     # Converter IHS de volta para RGB
     r, g, b = ihs_to_rgb(h, s, i)

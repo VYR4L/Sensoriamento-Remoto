@@ -30,7 +30,7 @@ def pca_fusion(multispectral_path, panchromatic_path, output_path):
     
     # Ler a banda pancromática e normalizá-la
     pan = read_band(panchromatic_path, 1)
-    pan = pan / np.max(pan) * 255
+    pan = pan / (pan.max() - pan.min()) * 255
 
     # Empilhar as bandas multiespectrais em uma matriz
     X = np.stack((X1, X2, X3, X4), axis=0)
