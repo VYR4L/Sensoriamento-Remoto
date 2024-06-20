@@ -1,59 +1,67 @@
-import numpy as np
 from osgeo import gdal
-from sklearn.decomposition import PCA
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+
+
+def read_band(file_path, band_number):
+    ds = gdal.Open(file_path)
+    band = ds.GetRasterBand(band_number)
+    array = band.ReadAsArray()
+    return array
+
+
+def write_geotiff(output_path, data, geo_transform, projection):
+    driver = gdal.GetDriverByName('GTiff')
+    out_raster = driver.Create(output_path, data.shape[2], data.shape[1], data.shape[0], gdal.GDT_Float32)
+    out_raster.SetGeoTransform(geo_transform)
+    out_raster.SetProjection(projection)
+    for i in range(data.shape[0]):
+        out_raster.GetRasterBand(i + 1).WriteArray(data[i])
+    out_raster.FlushCache()
+    out_raster = None
 
 
 def pca_fusion(multispectral_path, panchromatic_path, output_path):
-    # Abrindo as imagens multiespectral e pancromática
-    multispectral_dataset = gdal.Open(multispectral_path)
-    panchromatic_dataset = gdal.Open(panchromatic_path)
+    # Ler as bandas multiespectrais
+    X1 = read_band(multispectral_path, 1)
+    X2 = read_band(multispectral_path, 2)
+    X3 = read_band(multispectral_path, 3)
+    X4 = read_band(multispectral_path, 4)
+    
+    # Ler a banda pancromática e normalizá-la
+    pan = read_band(panchromatic_path, 1)
+    pan = pan / np.max(pan) * 255
 
-    # Lendo os dados das imagens
-    multispectral_data = multispectral_dataset.ReadAsArray()
-    panchromatic_data = panchromatic_dataset.ReadAsArray()
+    # Empilhar as bandas multiespectrais em uma matriz
+    X = np.stack((X1, X2, X3, X4), axis=0)
+    n_bands, n_rows, n_cols = X.shape
+    X_flat = X.reshape(n_bands, -1).T
 
-    # Obtendo as dimensões das imagens
-    rows, cols = multispectral_data.shape
+    # Centralizar os dados
+    scaler = StandardScaler()
+    X_flat = scaler.fit_transform(X_flat)
 
-    # Redimensionando a imagem pancromática para a mesma resolução espacial da imagem multiespectral
-    panchromatic_data_resized = np.zeros((rows, cols))
-    gdal.ReprojectImage(
-        panchromatic_dataset,
-        np.zeros((rows, cols)),
-        multispectral_dataset.GetProjection(),
-        np.zeros((rows, cols)),
-        multispectral_dataset.GetProjection(),
-        gdal.GRA_Bilinear, 0, 0,
-        callback=None,
-        callback_data=None)
+    # Calcular a matriz de covariância e obter os autovalores e autovetores
+    cov_matrix = np.cov(X_flat, rowvar=False)
+    eigvals, eigvecs = np.linalg.eig(cov_matrix)
 
-    # Reformulando os dados para a entrada do PCA
-    panchromatic_flat = panchromatic_data_resized.flatten()
-    multispectral_flat = multispectral_data.reshape(multispectral_data.shape[0], -1).T
+    # Transformar os dados para o espaço dos componentes principais
+    Y = np.dot(X_flat, eigvecs)
 
-    # Aplicando o PCA
-    pca = PCA(n_components=1)
-    panchromatic_pca = pca.fit_transform(panchromatic_flat.reshape(-1, 1))
-    fused_data = multispectral_flat + panchromatic_pca @ pca.components_
+    # Substituir o primeiro componente principal pela banda pancromática
+    pan_flat = pan.flatten()
+    Y[:, 0] = pan_flat
 
-    # Reshape dos dados fundidos
-    fused_data_reshaped = fused_data.T.reshape(multispectral_data.shape)
+    # Transformar de volta para o espaço original
+    X_fused_flat = np.dot(Y, np.linalg.inv(eigvecs))
+    X_fused_flat = scaler.inverse_transform(X_fused_flat)
 
-    # Salvando a imagem resultante
-    driver = gdal.GetDriverByName("GTiff")
-    output_dataset = driver.Create(output_path, cols, rows, multispectral_dataset.RasterCount, multispectral_dataset.GetRasterBand(1).DataType)
+    # Reshape para a forma original
+    X_fused = X_fused_flat.T.reshape(n_bands, n_rows, n_cols)
 
-    # Escrevendo os dados na banda
-    for i in range(multispectral_dataset.RasterCount):
-        output_band = output_dataset.GetRasterBand(i + 1)
-        output_band.WriteArray(fused_data_reshaped[i, :, :])
-
-    # Copiando informações de georreferenciamento e projeção da imagem multiespectral
-    output_dataset.SetGeoTransform(multispectral_dataset.GetGeoTransform())
-    output_dataset.SetProjection(multispectral_dataset.GetProjection())
-
-    # Fechando os datasets
-    multispectral_dataset = None
-    panchromatic_dataset = None
-    output_dataset = None
-
+    # Salvar a imagem resultante
+    multispectral_ds = gdal.Open(multispectral_path)
+    geo_transform = multispectral_ds.GetGeoTransform()
+    projection = multispectral_ds.GetProjection()
+    
+    write_geotiff(output_path, X_fused, geo_transform, projection)

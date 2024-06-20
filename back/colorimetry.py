@@ -1,33 +1,50 @@
 from osgeo import gdal
 import numpy as np
+import cv2
+
+
+def rgb_to_ihs(r, g, b):
+    # Converte RGB para IHS
+    rgb = np.stack([r, g, b], axis=-1)
+    ihs = cv2.cvtColor(rgb, cv2.COLOR_RGB2HSV)
+    return ihs[..., 2], ihs[..., 1], ihs[..., 0]  # IHS -> HSI com canais H, S, I
+
+
+def ihs_to_rgb(h, s, i):
+    # Converte IHS para RGB
+    ihs = np.stack([h, s, i], axis=-1)
+    rgb = cv2.cvtColor(ihs, cv2.COLOR_HSV2RGB)
+    return rgb[..., 0], rgb[..., 1], rgb[..., 2]
+
 
 def colorimetric_fusion(multispectral_path, panchromatic_path, output_path):
     # Abrir as imagens multiespectral e pancromática
     multispectral_ds = gdal.Open(multispectral_path)
     panchromatic_ds = gdal.Open(panchromatic_path)
 
-    # Ler os dados das imagens
-    multispectral_data = []
-    for i in range(1, multispectral_ds.RasterCount + 1):
-        band_data = multispectral_ds.GetRasterBand(i).ReadAsArray()
-        multispectral_data.append(band_data)
+    # Ler as três bandas multiespectrais para RGB (e.g., B2, B3, B4)
+    r = multispectral_ds.GetRasterBand(3).ReadAsArray()  # Banda Vermelha
+    g = multispectral_ds.GetRasterBand(2).ReadAsArray()  # Banda Verde
+    b = multispectral_ds.GetRasterBand(1).ReadAsArray()  # Banda Azul
 
-    multispectral_data = np.array(multispectral_data)
+    # Ler a banda pancromática
     panchromatic_data = panchromatic_ds.GetRasterBand(1).ReadAsArray()
 
-    # Realizar a fusão colorimétrica
-    fused_data = np.zeros_like(multispectral_data[0], dtype=np.uint8)
-    for i in range(fused_data.shape[0]):
-        for j in range(fused_data.shape[1]):
-            pixel_values = multispectral_data[:, i, j]
-            fused_data[i,j] = int(np.mean(pixel_values) * (panchromatic_data[i,j] / 255.0))
+    # Converter RGB para IHS
+    i, h, s = rgb_to_ihs(r, g, b)
+
+    # Substituir o componente de Intensidade pela banda pancromática
+    i = panchromatic_data
+
+    # Converter IHS de volta para RGB
+    r, g, b = ihs_to_rgb(h, s, i)
 
     # Salvar a imagem resultante
     driver = gdal.GetDriverByName('GTiff')
-    fused_ds = driver.Create(output_path, multispectral_ds.RasterXSize, multispectral_ds.RasterYSize, 1, gdal.GDT_Byte)
+    fused_ds = driver.Create(output_path, multispectral_ds.RasterXSize, multispectral_ds.RasterYSize, 3, gdal.GDT_Byte)
     fused_ds.SetProjection(multispectral_ds.GetProjection())
     fused_ds.SetGeoTransform(multispectral_ds.GetGeoTransform())
-    fused_ds.GetRasterBand(1).WriteArray(fused_data)
+    fused_ds.GetRasterBand(1).WriteArray(r)
+    fused_ds.GetRasterBand(2).WriteArray(g)
+    fused_ds.GetRasterBand(3).WriteArray(b)
     fused_ds = None
-
-
