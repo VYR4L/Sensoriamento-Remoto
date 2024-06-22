@@ -1,7 +1,6 @@
 from front.interface import MainWindow, STYLESHEET_PATH
 from PyQt6.QtWidgets import QApplication
 import sys
-import cv2
 from web.API import api
 from back.colorimetry import colorimetric_fusion
 from back.PCA import pca_fusion

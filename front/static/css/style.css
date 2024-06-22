@@ -108,6 +108,9 @@
 #OutputFolderButton {
     background-color: #0e1629;
     color: white;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 16px;
 }
 
 #OutputFolderButton:hover {

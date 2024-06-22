@@ -15,9 +15,10 @@ ICON_IMAGE_PATH = ROOT_DIR / "front" / "static" / "img" / "imported.png"
 class MainWindow(QMainWindow):
     def __init__(self, api_function, colorimetric_method, pca_method):
         super().__init__()
-        self.pca_fucntion = pca_method
+        self.pca_function = pca_method
         self.colorimetric_function = colorimetric_method
         self.api_function = api_function
+        self.output_path = ''
         self.setWindowTitle("Janela Principal")
 
         # Dimensões da janela
@@ -46,6 +47,11 @@ class MainWindow(QMainWindow):
         self.open_api_setup_button.clicked.connect(self.open_api_setup)
         self.open_api_setup_button.setFixedSize(150, 50)
 
+        # Configurando o botão de saída de imagem
+        self.output_folder_button = QPushButton("Selecione o diretório de saída")
+        self.output_folder_button.setObjectName("OutputFolderButton")
+        self.output_folder_button.clicked.connect(self.select_output_folder)
+
         # Configurando os botões de importação
         self.import_multispectral_button = QPushButton("Importar MultiS")
         self.import_multispectral_button.setObjectName("MultiSpectralButton")
@@ -53,7 +59,7 @@ class MainWindow(QMainWindow):
         self.import_multispectral_button.setFixedSize(150, 50)
         self.import_multispectral_button.setIcon(QIcon(str(ICON_IMAGE_PATH)))
 
-        self.import_panc_button = QPushButton("Importar PanC")
+        self.import_panc_button = QPushButton("Importar Pan")
         self.import_panc_button.setObjectName("PanCButton")
         self.import_panc_button.clicked.connect(self.import_panc)
         self.import_panc_button.setFixedSize(150, 50)
@@ -75,6 +81,9 @@ class MainWindow(QMainWindow):
         buttons_layout = QVBoxLayout()
         buttons_layout.addWidget(self.open_tutorial_button, alignment=Qt.AlignmentFlag.AlignCenter)
         buttons_layout.addWidget(self.open_api_setup_button, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Adicionando o botão de saída de imagem
+        buttons_layout.addWidget(self.output_folder_button, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Criando um layout horizontal para os botões de importação
         import_buttons_layout = QHBoxLayout()
@@ -121,20 +130,42 @@ class MainWindow(QMainWindow):
         if file_path:
             self.panchromatic_path = file_path
 
+    def select_output_folder(self):
+        folder_dialog = QFileDialog()
+        folder_path = folder_dialog.getExistingDirectory(self, "Selecione o diretório de saída")
+        if folder_path:
+            self.output_path = folder_path
+
     def open_pca_method(self):
-        self.pca_fucntion(
+        if self.output_path != '':
+            self.pca_function(
             self.multiespectral_path,
             self.panchromatic_path,
             self.output_path
         )
+        else:
+            error_message = QMessageBox()
+            error_message.setIcon(QMessageBox.Icon.Critical)
+            error_message.setWindowTitle("Erro")
+            error_message.setText("Ocorreu um erro!")
+            error_message.setInformativeText("Por favor, insira um diretório de saída.")
+            error_message.setStandardButtons(QMessageBox.StandardButton.Ok)        
 
     def open_colorimetric_method(self):
-        self.colorimetric_function(
-            self.multiespectral_path,
-            self.panchromatic_path,
-            self.output_path
-        )
-
+        if self.output_path != '':
+            self.colorimetric_function(
+                self.multiespectral_path,
+                self.panchromatic_path,
+                self.output_path
+            )
+        else:
+            error_message = QMessageBox()
+            error_message.setIcon(QMessageBox.Icon.Critical)
+            error_message.setWindowTitle("Erro")
+            error_message.setText("Ocorreu um erro!")
+            error_message.setInformativeText("Por favor, insira um diretório de saída.")
+            error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
+        
 
 class TutorialDialog(QDialog):
     def __init__(self, content):
@@ -208,13 +239,6 @@ class SetUpAPIWindow(QWidget):
         self.area_of_interest_field.setPlaceholderText("Área de interesse")
         self.layout.addWidget(self.area_of_interest_field)
 
-        self.output_folder_button = QPushButton("Selecione o diretório de saída")
-        self.output_folder_button.setObjectName("OutputFolderButton")
-        self.output_folder_button.clicked.connect(self.select_output_folder)
-        self.output_folder_label = QLabel("Nenhum diretório selecionado")
-        self.layout.addWidget(self.output_folder_button)
-        self.layout.addWidget(self.output_folder_label)
-
         # Criando o botão de execução
         self.execute_button = QPushButton("Confirmar")
         self.execute_button.setObjectName("ExecuteButton")
@@ -235,14 +259,6 @@ class SetUpAPIWindow(QWidget):
         else:
             self.api_file_label.setText("Nenhum arquivo selecionado")
 
-    def select_output_folder(self):
-        folder_dialog = QFileDialog()
-        folder_path = folder_dialog.getExistingDirectory(self, "Selecione o diretório de saída")
-
-        if folder_path:
-            self.output_folder_label.setText(f"Diretório selecionado: {folder_path}")
-        else:
-            self.output_folder_label.setText("Nenhum diretório selecionado")
 
     def execute(self):
         # Chamando a função de API com os parâmetros necessários
@@ -253,5 +269,4 @@ class SetUpAPIWindow(QWidget):
             self.collection_field.currentText(),
             self.id_field.text(),
             self.area_of_interest_field.text(),
-            self.output_folder_label.text().replace("Diretório selecionado: ", "")
         )

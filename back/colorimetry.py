@@ -1,28 +1,28 @@
 from osgeo import gdal
 import numpy as np
-import cv2
+from PIL import Image
 
+def rgb_to_hsv(r, g, b):
+    # Converte RGB para HSV
+    rgb = np.stack([r, g, b], axis=-1).astype(np.float32) / 255.0
+    img = Image.fromarray((rgb * 255).astype(np.uint8), 'RGB').convert('HSV')
+    hsv = np.array(img)
+    h, s, v = hsv[..., 0], hsv[..., 1], hsv[..., 2]
+    return v, h, s
 
-def rgb_to_ihs(r, g, b):
-    # Converte RGB para IHS
-    rgb = np.stack([r, g, b], axis=-1)
-    ihs = cv2.cvtColor(rgb, cv2.COLOR_RGB2HSV)
-    return ihs[..., 2], ihs[..., 1], ihs[..., 0]  # IHS -> HSI com canais H, S, I
-
-
-def ihs_to_rgb(h, s, i):
-    # Converte IHS para RGB
-    ihs = np.stack([h, s, i], axis=-1)
-    rgb = cv2.cvtColor(ihs, cv2.COLOR_HSV2RGB)
-    return rgb[..., 0], rgb[..., 1], rgb[..., 2]
-
+def hsv_to_rgb(h, s, v):
+    # Converte HSV para RGB
+    hsv = np.stack([h, s, v], axis=-1).astype(np.uint8)
+    img = Image.fromarray(hsv, 'HSV').convert('RGB')
+    rgb = np.array(img) / 255.0
+    return rgb[..., 0] * 255, rgb[..., 1] * 255, rgb[..., 2] * 255
 
 def colorimetric_fusion(multispectral_path, panchromatic_path, output_path):
     # Abrir as imagens multiespectral e pancromática
     multispectral_ds = gdal.Open(multispectral_path)
     panchromatic_ds = gdal.Open(panchromatic_path)
 
-    # Ler as três bandas multiespectrais para RGB (e.g., B2, B3, B4)
+    # Ler as três bandas multiespectrais para RGB
     r = multispectral_ds.GetRasterBand(3).ReadAsArray()  # Banda Vermelha
     g = multispectral_ds.GetRasterBand(2).ReadAsArray()  # Banda Verde
     b = multispectral_ds.GetRasterBand(1).ReadAsArray()  # Banda Azul
@@ -31,16 +31,16 @@ def colorimetric_fusion(multispectral_path, panchromatic_path, output_path):
     pan = panchromatic_ds.GetRasterBand(1).ReadAsArray()
 
     # Normalizar a banda pancromática
-    pan = pan / (pan.max() - pan.min()) * 255
+    pan = (pan - pan.min()) / (pan.max() - pan.min()) * 255
 
-    # Converter RGB para IHS
-    i, h, s = rgb_to_ihs(r, g, b)
+    # Converter RGB para HSV
+    v, h, s = rgb_to_hsv(r, g, b)
 
     # Substituir o componente de Intensidade pela banda pancromática
-    i = pan
+    v = pan
 
-    # Converter IHS de volta para RGB
-    r, g, b = ihs_to_rgb(h, s, i)
+    # Converter HSV de volta para RGB
+    r, g, b = hsv_to_rgb(h, s, v)
 
     # Salvar a imagem resultante
     driver = gdal.GetDriverByName('GTiff')
