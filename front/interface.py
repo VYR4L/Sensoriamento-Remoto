@@ -138,11 +138,20 @@ class MainWindow(QMainWindow):
 
     def open_pca_method(self):
         if self.output_path != '':
-            self.pca_function(
-            self.multiespectral_path,
-            self.panchromatic_path,
-            self.output_path
-        )
+            try:
+                self.pca_function(
+                self.multiespectral_path,
+                self.panchromatic_path,
+                self.output_path
+            )
+            except Exception as e:
+                error_message = QMessageBox()
+                error_message.setIcon(QMessageBox.Icon.Critical)
+                error_message.setWindowTitle("Erro")
+                error_message.setText("Ocorreu um erro!")
+                error_message.setInformativeText(str(e))
+                error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
+                error_message.exec()
         else:
             error_message = QMessageBox()
             error_message.setIcon(QMessageBox.Icon.Critical)
@@ -153,11 +162,20 @@ class MainWindow(QMainWindow):
 
     def open_colorimetric_method(self):
         if self.output_path != '':
-            self.colorimetric_function(
-                self.multiespectral_path,
-                self.panchromatic_path,
-                self.output_path
-            )
+            try:
+                self.colorimetric_function(
+                    self.multiespectral_path,
+                    self.panchromatic_path,
+                    self.output_path
+                )
+            except Exception as e:
+                error_message = QMessageBox()
+                error_message.setIcon(QMessageBox.Icon.Critical)
+                error_message.setWindowTitle("Erro")
+                error_message.setText("Ocorreu um erro!")
+                error_message.setInformativeText(str(e))
+                error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
+                error_message.exec()
         else:
             error_message = QMessageBox()
             error_message.setIcon(QMessageBox.Icon.Critical)
@@ -223,13 +241,20 @@ class SetUpAPIWindow(QWidget):
         self.layout.addWidget(self.api_file_button)
         self.layout.addWidget(self.api_file_label)
 
+        # Criar e adicionar o QComboBox para satélites
         self.satellite_field = QComboBox()
-        self.satellite_field.addItems(["Landsat", "CBERS"])
+        self.satellite_field.addItems(["CBERS 04A", "Landsat"])
         self.layout.addWidget(self.satellite_field)
 
+        # Criar e adicionar o QComboBox para coleções (inicialmente vazio)
         self.collection_field = QComboBox()
-        self.collection_field.addItems(["C01", "C02"])
         self.layout.addWidget(self.collection_field)
+
+        # Conectar o sinal de mudança de seleção do QComboBox
+        self.satellite_field.currentIndexChanged.connect(self.update_collections)
+
+        # Inicializar as coleções
+        self.update_collections()
 
         self.id_field = QLineEdit()
         self.id_field.setPlaceholderText("ID")
@@ -262,11 +287,27 @@ class SetUpAPIWindow(QWidget):
 
     def execute(self):
         # Chamando a função de API com os parâmetros necessários
-        self.funcao(
-            self.account_field.text(),
-            self.api_file_label.text().replace("Arquivo selecionado: ", ""),
-            self.satellite_field.currentText(),
-            self.collection_field.currentText(),
-            self.id_field.text(),
-            self.area_of_interest_field.text(),
-        )
+        try:
+            self.funcao(
+                self.account_field.text(),
+                self.api_file_label.text().replace("Arquivo selecionado: ", ""),
+                self.satellite_field.currentText(),
+                self.collection_field.currentText(),
+                self.id_field.text(),
+                self.area_of_interest_field.text(),
+            )
+        except Exception as e:
+            error_message = QMessageBox()
+            error_message.setIcon(QMessageBox.Icon.Critical)
+            error_message.setWindowTitle("Erro")
+            error_message.setText("Ocorreu um erro!")
+            error_message.setInformativeText(str(e))
+            error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
+            error_message.exec()
+
+    def update_collections(self):
+        # Limpar as opções atuais
+        self.collection_field.clear()
+
+        if self.satellite_field.currentText() == "Landsat":
+            self.collection_field.addItems(["C01", "C02"])
