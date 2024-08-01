@@ -151,7 +151,6 @@ class MainWindow(QMainWindow):
                 success_message.setText("Fusão realizada com sucesso!")
                 success_message.setStandardButtons(QMessageBox.StandardButton.Ok)
                 success_message.exec()
-                print('ok')
 
             except Exception as e:
                 error_message = QMessageBox()
@@ -161,7 +160,6 @@ class MainWindow(QMainWindow):
                 error_message.setInformativeText(str(e))
                 error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
                 error_message.exec()
-                print('erro', e)  
         else:
             error_message = QMessageBox()
             error_message.setIcon(QMessageBox.Icon.Critical)
@@ -174,7 +172,6 @@ class MainWindow(QMainWindow):
 
     def open_colorimetric_method(self):
         if self.output_path != '':
-            print('chegou aqui?')
             try:
                 pca_fusion(
                     self.multiespectral_path,
@@ -187,7 +184,6 @@ class MainWindow(QMainWindow):
                 success_message.setText("Fusão realizada com sucesso!")
                 success_message.setStandardButtons(QMessageBox.StandardButton.Ok)
                 success_message.exec()
-                print('ok')
 
             except Exception as e:
                 error_message = QMessageBox()
@@ -197,7 +193,6 @@ class MainWindow(QMainWindow):
                 error_message.setInformativeText(str(e))
                 error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
                 error_message.exec()
-                print('erro', e)
         else:
             error_message = QMessageBox()
             error_message.setIcon(QMessageBox.Icon.Critical)

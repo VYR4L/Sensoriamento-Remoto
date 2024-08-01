@@ -1,6 +1,7 @@
 import ee
 import subprocess
 
+
 # Função para acessar a API do Google Earth Engine
 def api(account, api_file, satellite, collection, id, area_of_interest, output_folder):
     satellite_name = ''

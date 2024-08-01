@@ -2,6 +2,7 @@ from osgeo import gdal
 import numpy as np
 from PIL import Image
 
+
 def rgb_to_hsv(r, g, b):
     # Converte RGB para HSV
     rgb = np.stack([r, g, b], axis=-1).astype(np.float32) / 255.0
