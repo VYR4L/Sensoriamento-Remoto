@@ -4,6 +4,9 @@ from pathlib import Path
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QBrush, QPalette, QIcon
+from back.colorimetry import colorimetric_fusion
+from back.PCA import pca_fusion
+
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 STYLESHEET_PATH = ROOT_DIR / "front" / "static" / "css" / "style.css"
@@ -13,10 +16,8 @@ ICON_IMAGE_PATH = ROOT_DIR / "front" / "static" / "img" / "imported.png"
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, api_function, colorimetric_method, pca_method):
+    def __init__(self, api_function):
         super().__init__()
-        self.pca_function = pca_method
-        self.colorimetric_function = colorimetric_method
         self.api_function = api_function
         self.output_path = ''
         self.setWindowTitle("Janela Principal")
@@ -139,11 +140,19 @@ class MainWindow(QMainWindow):
     def open_pca_method(self):
         if self.output_path != '':
             try:
-                self.pca_function(
+                colorimetric_fusion(
                 self.multiespectral_path,
                 self.panchromatic_path,
                 self.output_path
             )
+                success_message = QMessageBox()
+                success_message.setIcon(QMessageBox.Icon.Information)
+                success_message.setWindowTitle("Sucesso")
+                success_message.setText("Fusão realizada com sucesso!")
+                success_message.setStandardButtons(QMessageBox.StandardButton.Ok)
+                success_message.exec()
+                print('ok')
+
             except Exception as e:
                 error_message = QMessageBox()
                 error_message.setIcon(QMessageBox.Icon.Critical)
@@ -152,22 +161,34 @@ class MainWindow(QMainWindow):
                 error_message.setInformativeText(str(e))
                 error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
                 error_message.exec()
+                print('erro', e)  
         else:
             error_message = QMessageBox()
             error_message.setIcon(QMessageBox.Icon.Critical)
             error_message.setWindowTitle("Erro")
             error_message.setText("Ocorreu um erro!")
             error_message.setInformativeText("Por favor, insira um diretório de saída.")
-            error_message.setStandardButtons(QMessageBox.StandardButton.Ok)        
+            error_message.setStandardButtons(QMessageBox.StandardButton.Ok)  
+            error_message.exec()
+                
 
     def open_colorimetric_method(self):
         if self.output_path != '':
+            print('chegou aqui?')
             try:
-                self.colorimetric_function(
+                pca_fusion(
                     self.multiespectral_path,
                     self.panchromatic_path,
                     self.output_path
                 )
+                success_message = QMessageBox()
+                success_message.setIcon(QMessageBox.Icon.Information)
+                success_message.setWindowTitle("Sucesso")
+                success_message.setText("Fusão realizada com sucesso!")
+                success_message.setStandardButtons(QMessageBox.StandardButton.Ok)
+                success_message.exec()
+                print('ok')
+
             except Exception as e:
                 error_message = QMessageBox()
                 error_message.setIcon(QMessageBox.Icon.Critical)
@@ -176,6 +197,7 @@ class MainWindow(QMainWindow):
                 error_message.setInformativeText(str(e))
                 error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
                 error_message.exec()
+                print('erro', e)
         else:
             error_message = QMessageBox()
             error_message.setIcon(QMessageBox.Icon.Critical)
@@ -183,6 +205,7 @@ class MainWindow(QMainWindow):
             error_message.setText("Ocorreu um erro!")
             error_message.setInformativeText("Por favor, insira um diretório de saída.")
             error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
+            error_message.exec()
         
 
 class TutorialDialog(QDialog):
