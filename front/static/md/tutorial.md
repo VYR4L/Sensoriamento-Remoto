@@ -1,6 +1,6 @@
 # Bem-vindo ao aplicativo de fusão espacial!
 
-Antes de tudo, verifique meu repositório GitHub para mais informações e/ou sugestões: **https://github.com/VYR4L/Sensoriamento-Remoto**
+Antes de tudo, verifique meu repositório GitHub para mais informações e/ou sugestões: **<https://github.com/VYR4L/Sensoriamento-Remoto>**
 
 ## Agora, para o tutorial:
 
@@ -10,7 +10,7 @@ Antes de tudo, verifique meu repositório GitHub para mais informações e/ou su
     * Habilite sua API do Google Earth Engine;
     * Informe sua conta de e-mail da API;
     * Importe seu arquivo API;
-    * Escolha o satélite (por enquanto só temos CBERS-04A e Landsat), depois você irá inserir os dados e o tamanho da imagem que deseja. Você pode redimensionar e obter uma fatia melhor do terreno em **https://earthexplorer.usgs.gov/**
+    * Escolha o satélite (por enquanto só temos CBERS-04A e Landsat), depois você irá inserir os dados e o tamanho da imagem que deseja. Você pode redimensionar e obter uma fatia melhor do terreno em **<https://earthexplorer.usgs.gov/>**
     * Insira a área de interesse (em decimal).
     * Insira o ID da imagem;
     

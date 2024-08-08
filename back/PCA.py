@@ -31,36 +31,36 @@ def pca_fusion(multispectral_path, panchromatic_path, output_path):
     # Empilhar as bandas multiespectrais em uma matriz
     X = np.stack((X1, X2, X3, X4), axis=0)
     n_bands, n_rows, n_cols = X.shape
-    X_flat = X.reshape(n_bands, -1).T
+    x_flat = X.reshape(n_bands, -1).T
 
     # Ler a banda pancromática e normalizá-la com base na banda a ser substituída
     pan = read_band(panchromatic_path, 1)
     pan = (pan - pan.min()) / (pan.max() - pan.min()) * (X.max() - X.min())
     # Centralizar os dados
     scaler = StandardScaler()
-    X_flat = scaler.fit_transform(X_flat)
+    x_flat = scaler.fit_transform(x_flat)
 
     # Calcular a matriz de covariância e obter os autovalores e autovetores
-    cov_matrix = np.cov(X_flat, rowvar=False)
+    cov_matrix = np.cov(x_flat, rowvar=False)
     eigvals, eigvecs = np.linalg.eig(cov_matrix)
 
     # Transformar os dados para o espaço dos componentes principais
-    Y = np.dot(X_flat, eigvecs)
+    Y = np.dot(x_flat, eigvecs)
 
     # Substituir o primeiro componente principal pela banda pancromática
     pan_flat = pan.flatten()
     Y[:, 0] = pan_flat
 
     # Transformar de volta para o espaço original
-    X_fused_flat = np.dot(Y, np.linalg.inv(eigvecs))
-    X_fused_flat = scaler.inverse_transform(X_fused_flat)
+    x_fused_flat = np.dot(Y, np.linalg.inv(eigvecs))
+    x_fused_flat = scaler.inverse_transform(x_fused_flat)
 
     # Reshape para a forma original
-    X_fused = X_fused_flat.T.reshape(n_bands, n_rows, n_cols)
+    x_fused = x_fused_flat.T.reshape(n_bands, n_rows, n_cols)
 
     # Salvar a imagem resultante
     multispectral_ds = gdal.Open(multispectral_path)
     geo_transform = multispectral_ds.GetGeoTransform()
     projection = multispectral_ds.GetProjection()
     
-    write_geotiff(output_path, X_fused, geo_transform, projection)
+    write_geotiff(output_path, x_fused, geo_transform, projection)

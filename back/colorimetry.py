@@ -11,12 +11,14 @@ def rgb_to_hsv(r, g, b):
     h, s, v = hsv[..., 0], hsv[..., 1], hsv[..., 2]
     return v, h, s
 
+
 def hsv_to_rgb(h, s, v):
     # Converte HSV para RGB
     hsv = np.stack([h, s, v], axis=-1).astype(np.uint8)
     img = Image.fromarray(hsv, 'HSV').convert('RGB')
     rgb = np.array(img) / 255.0
     return rgb[..., 0] * 255, rgb[..., 1] * 255, rgb[..., 2] * 255
+
 
 def colorimetric_fusion(multispectral_path, panchromatic_path, output_path):
     # Abrir as imagens multiespectral e pancromática

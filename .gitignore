@@ -12,6 +12,9 @@ __pycache__/
 # Old files
 .old
 
+# zip files
+*.zip
+
 # API File
 ee-fkzzanatt-ac9270b29327.json
 

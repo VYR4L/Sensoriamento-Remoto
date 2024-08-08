@@ -1,7 +1,7 @@
 import sys
 import markdown
 from pathlib import Path
-from PyQt6.QtWidgets import *
+from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QHBoxLayout, QFileDialog, QLabel, QTextEdit, QDialog, QLineEdit, QComboBox, QMessageBox
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QBrush, QPalette, QIcon
 from back.colorimetry import colorimetric_fusion
@@ -13,6 +13,7 @@ STYLESHEET_PATH = ROOT_DIR / "front" / "static" / "css" / "style.css"
 TUTORIAL_PATH = ROOT_DIR / "front" / "static" / "md" / "tutorial.md"
 BACKGROUND_IMAGE_PATH = ROOT_DIR / "front" / "static" / "img" / "Background2.png"
 ICON_IMAGE_PATH = ROOT_DIR / "front" / "static" / "img" / "imported.png"
+error_string = 'Ocorreu um erro!'
 
 
 class MainWindow(QMainWindow):
@@ -156,7 +157,7 @@ class MainWindow(QMainWindow):
                 error_message = QMessageBox()
                 error_message.setIcon(QMessageBox.Icon.Critical)
                 error_message.setWindowTitle("Erro")
-                error_message.setText("Ocorreu um erro!")
+                error_message.setText(error_string)
                 error_message.setInformativeText(str(e))
                 error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
                 error_message.exec()
@@ -164,7 +165,7 @@ class MainWindow(QMainWindow):
             error_message = QMessageBox()
             error_message.setIcon(QMessageBox.Icon.Critical)
             error_message.setWindowTitle("Erro")
-            error_message.setText("Ocorreu um erro!")
+            error_message.setText(error_string)
             error_message.setInformativeText("Por favor, insira um diretório de saída.")
             error_message.setStandardButtons(QMessageBox.StandardButton.Ok)  
             error_message.exec()
@@ -189,7 +190,7 @@ class MainWindow(QMainWindow):
                 error_message = QMessageBox()
                 error_message.setIcon(QMessageBox.Icon.Critical)
                 error_message.setWindowTitle("Erro")
-                error_message.setText("Ocorreu um erro!")
+                error_message.setText(error_string)
                 error_message.setInformativeText(str(e))
                 error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
                 error_message.exec()
@@ -197,7 +198,7 @@ class MainWindow(QMainWindow):
             error_message = QMessageBox()
             error_message.setIcon(QMessageBox.Icon.Critical)
             error_message.setWindowTitle("Erro")
-            error_message.setText("Ocorreu um erro!")
+            error_message.setText(error_string)
             error_message.setInformativeText("Por favor, insira um diretório de saída.")
             error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
             error_message.exec()
@@ -227,15 +228,6 @@ class TutorialDialog(QDialog):
         self.setLayout(self.layout)
 
         self.setMinimumSize(500, 300)
-
-    def import_file(self):
-        file_dialog = QFileDialog()
-        file_path, _ = file_dialog.getOpenFileName(self, "Select a file:", "", "Tif files (*.tif)")
-
-        if file_path:
-            self.file_label.setText(f"File imported: {file_path}")
-        else:
-            self.file_label.setText("None file imported")
 
 
 class SetUpAPIWindow(QWidget):
@@ -318,7 +310,7 @@ class SetUpAPIWindow(QWidget):
             error_message = QMessageBox()
             error_message.setIcon(QMessageBox.Icon.Critical)
             error_message.setWindowTitle("Erro")
-            error_message.setText("Ocorreu um erro!")
+            error_message.setText(error_string)
             error_message.setInformativeText(str(e))
             error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
             error_message.exec()
