@@ -6,6 +6,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QBrush, QPalette, QIcon
 from back.colorimetry import colorimetric_fusion
 from back.PCA import pca_fusion
+from deep_translator import GoogleTranslator
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -14,6 +15,7 @@ TUTORIAL_PATH = ROOT_DIR / "front" / "static" / "md" / "tutorial.md"
 BACKGROUND_IMAGE_PATH = ROOT_DIR / "front" / "static" / "img" / "Background2.png"
 ICON_IMAGE_PATH = ROOT_DIR / "front" / "static" / "img" / "imported.png"
 error_string = 'Ocorreu um erro!'
+translator = GoogleTranslator(source='en', target='pt')
 
 
 class MainWindow(QMainWindow):
@@ -158,7 +160,8 @@ class MainWindow(QMainWindow):
                 error_message.setIcon(QMessageBox.Icon.Critical)
                 error_message.setWindowTitle("Erro")
                 error_message.setText(error_string)
-                error_message.setInformativeText(str(e))
+                translated_error = translator.translate(str(e))
+                error_message.setInformativeText(translated_error)
                 error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
                 error_message.exec()
         else:
@@ -191,7 +194,8 @@ class MainWindow(QMainWindow):
                 error_message.setIcon(QMessageBox.Icon.Critical)
                 error_message.setWindowTitle("Erro")
                 error_message.setText(error_string)
-                error_message.setInformativeText(str(e))
+                translated_error = translator.translate(str(e))
+                error_message.setInformativeText(translated_error)
                 error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
                 error_message.exec()
         else:
@@ -311,7 +315,8 @@ class SetUpAPIWindow(QWidget):
             error_message.setIcon(QMessageBox.Icon.Critical)
             error_message.setWindowTitle("Erro")
             error_message.setText(error_string)
-            error_message.setInformativeText(str(e))
+            translated_error = translator.translate(str(e))
+            error_message.setInformativeText(translated_error)
             error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
             error_message.exec()
 
