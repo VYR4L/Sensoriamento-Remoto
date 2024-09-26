@@ -2,6 +2,7 @@ import ee
 import subprocess
 
 
+# TODO arrumar o landsat
 # Função para acessar a API do Google Earth Engine
 def api(account, api_file, satellite, collection, id, area_of_interest, output_folder):
     satellite_name = ''
@@ -19,14 +20,14 @@ def api(account, api_file, satellite, collection, id, area_of_interest, output_f
     # Definir o nome do satélite e da coleção
     if satellite == 'Landsat LC08':
         if collection == 'C01':
-            satellite_name = 'LANDSAT/LC08/C01/T1_L2/'
+            satellite_name = 'LANDSAT/LC08/C01/T1/'
         elif collection == 'C02':
-            satellite_name = 'LANDSAT/LC08/C02/T1_L2/'
+            satellite_name = 'LANDSAT/LC08/C02/T1/'
     elif satellite == 'Landsat LC09':
         if collection == 'C01':
-            satellite_name = 'LANDSAT/LC09/C01/T1_L2/'
+            satellite_name = 'LANDSAT/LC09/C01/T1/'
         elif collection == 'C02':
-            satellite_name = 'LANDSAT/LC09/C02/T1_L2/'
+            satellite_name = 'LANDSAT/LC09/C02/T1/'
 
     if satellite == 'CBERS':
         satellite_name = 'CBERS/C4/AWFI/'
@@ -73,3 +74,5 @@ def api(account, api_file, satellite, collection, id, area_of_interest, output_f
         # Baixar a imagem
         exportation = f"earthengine --output={output_folder} export image {imagem_recortada.getDownloadURL()}"
         subprocess.call(exportation, shell=False)
+
+

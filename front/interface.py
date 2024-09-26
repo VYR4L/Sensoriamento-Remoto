@@ -138,15 +138,19 @@ class MainWindow(QMainWindow):
         folder_dialog = QFileDialog()
         folder_path = folder_dialog.getExistingDirectory(self, "Selecione o diretório de saída")
         if folder_path:
-            self.output_path = folder_path
+            self.output_path = Path(folder_path) / "resultado_fusao.tif"
 
     def open_pca_method(self):
         if self.output_path != '':
             try:
-                colorimetric_fusion(
-                self.multiespectral_path,
-                self.panchromatic_path,
-                self.output_path
+                multispectral_path_str = str(self.multiespectral_path)
+                panchromatic_path_str = str(self.panchromatic_path)
+                output_path_str = str(self.output_path)
+
+                pca_fusion(
+                multispectral_path_str,
+                panchromatic_path_str,
+                output_path_str
             )
                 success_message = QMessageBox()
                 success_message.setIcon(QMessageBox.Icon.Information)
@@ -177,11 +181,16 @@ class MainWindow(QMainWindow):
     def open_colorimetric_method(self):
         if self.output_path != '':
             try:
-                pca_fusion(
-                    self.multiespectral_path,
-                    self.panchromatic_path,
-                    self.output_path
-                )
+                multispectral_path_str = str(self.multiespectral_path)
+                panchromatic_path_str = str(self.panchromatic_path)
+                output_path_str = str(self.output_path)
+
+                colorimetric_fusion(
+                multispectral_path_str,
+                panchromatic_path_str,
+                output_path_str
+            )
+                
                 success_message = QMessageBox()
                 success_message.setIcon(QMessageBox.Icon.Information)
                 success_message.setWindowTitle("Sucesso")

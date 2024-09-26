@@ -1,6 +1,7 @@
 from osgeo import gdal
 import numpy as np
 from PIL import Image
+import tempfile
 
 
 def rgb_to_hsv(r, g, b):
@@ -20,10 +21,28 @@ def hsv_to_rgb(h, s, v):
     return rgb[..., 0] * 255, rgb[..., 1] * 255, rgb[..., 2] * 255
 
 
+def resize_to_match(reference_ds, target_ds):
+    # Redimensiona o target_ds para ter a mesma dimensão que reference_ds.
+    # Salva a imagem redimensionada em um arquivo temporário.
+    target_path_resized = tempfile.NamedTemporaryFile(suffix='.tif').name
+    
+    gdal.Warp(
+        target_path_resized,
+        target_ds,
+        width=reference_ds.RasterXSize,
+        height=reference_ds.RasterYSize,
+        resampleAlg=gdal.GRA_Bilinear 
+    )
+    
+    return gdal.Open(target_path_resized)
+
 def colorimetric_fusion(multispectral_path, panchromatic_path, output_path):
     # Abrir as imagens multiespectral e pancromática
     multispectral_ds = gdal.Open(multispectral_path)
     panchromatic_ds = gdal.Open(panchromatic_path)
+
+    # Redimensionar as bandas multiespectrais para corresponder à pancromática
+    multispectral_ds = resize_to_match(panchromatic_ds, multispectral_ds)
 
     # Ler as três bandas multiespectrais para RGB
     r = multispectral_ds.GetRasterBand(3).ReadAsArray()  # Banda Vermelha
