@@ -113,6 +113,16 @@
     font-size: 16px;
 }
 
+#OutputFolderButtonImages {
+    background-color: #0e1629;
+    color: white;
+}
+
+#OutputFolderButtonImages:hover {
+    background-color: #45a049;
+    color: white;
+}
+
 #OutputFolderButton:hover {
     background-color: #45a049;
     color: white;

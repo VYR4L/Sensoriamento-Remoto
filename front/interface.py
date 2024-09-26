@@ -254,35 +254,25 @@ class SetUpAPIWindow(QWidget):
 
         # Criando os campos de entrada
         self.account_field = QLineEdit()
-        self.account_field.setPlaceholderText("Conta")
+        self.account_field.setPlaceholderText("Nome do Projeto")
         self.layout.addWidget(self.account_field)
 
-        self.api_file_button = QPushButton("Selecione o arquivo de API")
-        self.api_file_button.setObjectName("ApiFileButton")
-        self.api_file_button.clicked.connect(self.select_api_file)
-        self.api_file_label = QLabel("Nenhum arquivo selecionado")
-        self.layout.addWidget(self.api_file_button)
-        self.layout.addWidget(self.api_file_label)
+        # Diretório do drive de saída das imagens
+        self.output_folder_field_images = QLineEdit()
+        self.output_folder_field_images.setPlaceholderText("Diretório do Google Drive onde as imagens serão salvas")
+        self.layout.addWidget(self.output_folder_field_images)
 
         # Criar e adicionar o QComboBox para satélites
         self.satellite_field = QComboBox()
-        self.satellite_field.addItems(["CBERS 04A", "Landsat"])
+        self.satellite_field.addItems(["CBERS 04A", "Landsat 08"])
         self.layout.addWidget(self.satellite_field)
 
-        # Criar e adicionar o QComboBox para coleções (inicialmente vazio)
-        self.collection_field = QComboBox()
-        self.layout.addWidget(self.collection_field)
-
-        # Conectar o sinal de mudança de seleção do QComboBox
-        self.satellite_field.currentIndexChanged.connect(self.update_collections)
-
-        # Inicializar as coleções
-        self.update_collections()
-
+        # ID da imagem do satélite
         self.id_field = QLineEdit()
         self.id_field.setPlaceholderText("ID")
         self.layout.addWidget(self.id_field)
 
+        # Área de recorte da imagem
         self.area_of_interest_field = QLineEdit()
         self.area_of_interest_field.setPlaceholderText("Área de interesse")
         self.layout.addWidget(self.area_of_interest_field)
@@ -298,27 +288,28 @@ class SetUpAPIWindow(QWidget):
 
         self.setMinimumSize(500, 300)
 
-    def select_api_file(self):
-        file_dialog = QFileDialog()
-        file_path, _ = file_dialog.getOpenFileName(self, "Selecione o arquivo da API:", "", "JSON files (*.json)")
-
-        if file_path:
-            self.api_file_label.setText(f"Arquivo selecionado: {file_path}")
-        else:
-            self.api_file_label.setText("Nenhum arquivo selecionado")
-
 
     def execute(self):
         # Chamando a função de API com os parâmetros necessários
         try:
             self.funcao(
                 self.account_field.text(),
-                self.api_file_label.text().replace("Arquivo selecionado: ", ""),
                 self.satellite_field.currentText(),
-                self.collection_field.currentText(),
                 self.id_field.text(),
-                self.area_of_interest_field.text(),
+                self.area_of_interest_field.text().split(","),
+                self.output_folder_field_images.text()
             )
+
+            if True:
+                success_message = QMessageBox()
+                success_message.setIcon(QMessageBox.Icon.Information)
+                success_message.setWindowTitle("Sucesso")
+                success_message.setText("Imagens baixadas com sucesso!")
+                success_message.setStandardButtons(QMessageBox.StandardButton.Ok)
+                success_message.exec()
+
+                self.close()
+
         except Exception as e:
             error_message = QMessageBox()
             error_message.setIcon(QMessageBox.Icon.Critical)
@@ -328,10 +319,3 @@ class SetUpAPIWindow(QWidget):
             error_message.setInformativeText(translated_error)
             error_message.setStandardButtons(QMessageBox.StandardButton.Ok)
             error_message.exec()
-
-    def update_collections(self):
-        # Limpar as opções atuais
-        self.collection_field.clear()
-
-        if self.satellite_field.currentText() == "Landsat":
-            self.collection_field.addItems(["C01", "C02"])

@@ -2,77 +2,103 @@ import ee
 import subprocess
 
 
-# TODO arrumar o landsat
 # Função para acessar a API do Google Earth Engine
-def api(account, api_file, satellite, collection, id, area_of_interest, output_folder):
+def api(project_name, satellite, id, area_of_interest, output_folder):
     satellite_name = ''
-    conta = account
-    caminho_da_api = api_file
 
     # Autenticar a sessão do Earth Engine
     ee.Authenticate()
-    credenciais = ee.ServiceAccountCredentials(conta, caminho_da_api)
-    ee.Initialize(credenciais)
+    ee.Initialize(project=project_name)
 
-    # Definir a área de interesse
-    area_de_interesse = ee.Geometry.Rectangle(area_of_interest)
+     # Definir a área de interesse
+    list_of_coordinates = []
+    for i in area_of_interest:
+        list_of_coordinates += i.split(' ')
+
+    list_of_coordinates = list(filter(None, list_of_coordinates))
+    area_de_interesse = ee.Geometry.Rectangle([float(list_of_coordinates[0]), float(list_of_coordinates[1]), float(list_of_coordinates[2]), float(list_of_coordinates[3])])
 
     # Definir o nome do satélite e da coleção
-    if satellite == 'Landsat LC08':
-        if collection == 'C01':
-            satellite_name = 'LANDSAT/LC08/C01/T1/'
-        elif collection == 'C02':
-            satellite_name = 'LANDSAT/LC08/C02/T1/'
-    elif satellite == 'Landsat LC09':
-        if collection == 'C01':
-            satellite_name = 'LANDSAT/LC09/C01/T1/'
-        elif collection == 'C02':
-            satellite_name = 'LANDSAT/LC09/C02/T1/'
+    if satellite == 'Landsat 08':
+        satellite_name = 'LANDSAT/LC08/C02/T1/LC08_'
 
-    if satellite == 'CBERS':
+    if satellite == 'CBERS 04A':
         satellite_name = 'CBERS/C4/AWFI/'
 
-    if id is not None:
-        satellite_name = satellite_name + id
+    if id:
+        satellite_name += id
 
-    if satellite_name.find('LANDSAT/LC') == True:
-    # Acessar a imagem Landsat diretamente pelo ID
-        imagem = ee.Image(satellite_name).select('B1','B2','B3','B4') # Imagem multiespectral
-
-        # Recortar a imagem para a área de interesse
-        imagem_recortada = imagem.clip(area_de_interesse)
-
-        # Baixar a imagem
-        exportation = f"earthengine --output={output_folder} export image {imagem_recortada.getDownloadURL()}"
-        subprocess.call(exportation, shell=True)
-
-        imagem = ee.Image(satellite_name).select('B8') # Imagem pancromática
+    # Para imagens Landsat
+    if 'LANDSAT/LC' in satellite_name:
+        # Acessar a imagem Landsat diretamente pelo ID
+        imagem = ee.Image(satellite_name).select('B1', 'B2', 'B3', 'B4')  # Imagem multiespectral
 
         # Recortar a imagem para a área de interesse
         imagem_recortada = imagem.clip(area_de_interesse)
 
-        # Baixar a imagem
-        exportation = f"earthengine --output={output_folder} export image {imagem_recortada.getDownloadURL()}"
-        subprocess.call(exportation, shell=True)
+        # Descrição da imagem
+        description = satellite_name + '_multiespectral'
 
-    if satellite_name.find('CBERS') == True:
+        # Exportar a imagem para o Google Drive
+        task = ee.batch.Export.image.toDrive(
+            image=imagem_recortada,
+            description=description.replace('/', '-'),
+            folder=output_folder,
+            scale=10,
+            region=area_de_interesse,
+            fileFormat='GeoTIFF'
+        )
+        task.start()
+
+        # Acessar e exportar a imagem pancromática
+        imagem_pancro = ee.Image(satellite_name).select('B8')  # Imagem pancromática
+        imagem_pancro_recortada = imagem_pancro.clip(area_de_interesse)
+        description_pancro = satellite_name + '_pancromatica'
+
+        # Exportar a imagem pancromática
+        task_pancro = ee.batch.Export.image.toDrive(
+            image=imagem_pancro_recortada,
+            description=description_pancro.replace('/', '-'),
+            folder=output_folder,
+            scale=10,
+            region=area_de_interesse,
+            fileFormat='GeoTIFF'
+        )
+        task_pancro.start()
+
+        return True
+
+    # Para imagens CBERS
+    if 'CBERS' in satellite_name:
         # Acessar a imagem CBERS diretamente pelo ID
-        imagem = ee.Image(satellite_name).select('BAND13','BAND14','BAND15','BAND16') # Imagem multiespectral
-
-        # Recortar a imagem para a área de interesse
+        imagem = ee.Image(satellite_name).select('BAND13', 'BAND14', 'BAND15', 'BAND16')  # Imagem multiespectral
         imagem_recortada = imagem.clip(area_de_interesse)
+        description = satellite_name + '_multiespectral'
 
-        # Baixar a imagem
-        exportation = f"earthengine --output={output_folder} export image {imagem_recortada.getDownloadURL()}"
-        subprocess.call(exportation, shell=False)
+        # Exportar a imagem multiespectral
+        task = ee.batch.Export.image.toDrive(
+            image=imagem_recortada,
+            description=description.replace('/', '-'),
+            folder=output_folder,
+            scale=10,
+            region=area_de_interesse,
+            fileFormat='GeoTIFF'
+        )
+        task.start()
 
-        imagem = ee.Image(satellite_name).select('BAND20') # Imagem pancromática
+        # Exportar a imagem pancromática
+        imagem_pancro = ee.Image(satellite_name).select('BAND20')
+        imagem_pancro_recortada = imagem_pancro.clip(area_de_interesse)
+        description_pancro = satellite_name + '_pancromatica'
 
-        # Recortar a imagem para a área de interesse
-        imagem_recortada = imagem.clip(area_de_interesse)
+        task_pancro = ee.batch.Export.image.toDrive(
+            image=imagem_pancro_recortada,
+            description=description_pancro.replace('/', '-'),
+            folder=output_folder,
+            scale=10,
+            region=area_de_interesse,
+            fileFormat='GeoTIFF'
+        )
+        task_pancro.start()
 
-        # Baixar a imagem
-        exportation = f"earthengine --output={output_folder} export image {imagem_recortada.getDownloadURL()}"
-        subprocess.call(exportation, shell=False)
-
-
+        return True

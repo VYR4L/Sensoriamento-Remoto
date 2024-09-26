@@ -8,10 +8,9 @@ Antes de tudo, verifique meu repositório GitHub para mais informações e/ou su
 
 2. Na tela da API, você precisará:
     * Habilite sua API do Google Earth Engine;
-    * Informe sua conta de e-mail da API;
-    * Importe seu arquivo API;
+    * Informe o nome do seu projeto
     * Escolha o satélite (por enquanto só temos CBERS-04A e Landsat), depois você irá inserir os dados e o tamanho da imagem que deseja. Você pode redimensionar e obter uma fatia melhor do terreno em **<https://earthexplorer.usgs.gov/>**
-    * Insira a área de interesse (em decimal).
+    * Insira a área de interesse (em decimal, separados por virgula, exemplo: -97.1221, 43.0109, -96.9868, 43.0565).
     * Insira o ID da imagem;
     
 
