@@ -15,8 +15,11 @@ __pycache__/
 # zip files
 *.zip
 
-# API File
-ee-fkzzanatt-ac9270b29327.json
+# Image files and directories
+web/images
+
+# API file
+*.json
 
 # Distribution / packaging
 .Python

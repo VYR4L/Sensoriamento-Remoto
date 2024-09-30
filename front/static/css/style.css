@@ -1,5 +1,5 @@
 /* style.css */
-#OpenTutorialButton {
+#Button {
     background-color: #0e1629;
     color: white;
     border-radius: 10px;
@@ -7,133 +7,29 @@
     font-size: 16px;
 }
 
-#OpenTutorialButton:hover {
+#Button:hover {
     background-color: #45a049;
     color: white;
 }
 
-#ApiSetupButton {
+
+#WButton {
     background-color: #0e1629;
     color: white;
-    border-radius: 10px;
-    padding: 10px;
+}
+
+#WButton:hover {
+    background-color: #45a049;
+    color: white;
+}
+
+#SatelliteField {
+    background-color: #0e1629;
+    color: white;
     font-size: 16px;
 }
 
-#ApiSetupButton:hover {
-    background-color: #45a049;
-    color: white;
-}
-
-#PCAFusionButton {
-    background-color: #0e1629;
-    color: white;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 16px;
-}
-
-#PCAFusionButton:hover {
-    background-color: #45a049;
-    color: white;
-}
-
-#ColorimetricFusionButton {
-    background-color: #0e1629;
-    color: white;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 16px;
-}
-
-#ColorimetricFusionButton:hover {
-    background-color: #45a049;
-    color: white;
-}
-
-#MultiSpectralButton {
-    background-color: #0e1629;
-    color: white;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 16px;
-}
-
-#MultiSpectralButton:hover {
-    background-color: #45a049;
-    color: white;
-}
-
-#PanCButton {
-    background-color: #0e1629;
-    color: white;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 16px;
-}
-
-#PanCButton {
-    background-color: #0e1629;
-    color: white;
-}
-
-#PanCButton:hover {
-    background-color: #45a049;
-    color: white;
-}
-
-#CloseButton {
-    background-color: #0e1629;
-    color: white;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 16px;
-}
-
-#CloseButton:hover {
-    background-color: #45a049;
-    color: white;
-}
-
-#ApiFileButton {
-    background-color: #0e1629;
-    color: white;
-}
-
-#ApiFileButton:hover {
-    background-color: #45a049;
-    color: white;
-}
-
-#OutputFolderButton {
-    background-color: #0e1629;
-    color: white;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 16px;
-}
-
-#OutputFolderButtonImages {
-    background-color: #0e1629;
-    color: white;
-}
-
-#OutputFolderButtonImages:hover {
-    background-color: #45a049;
-    color: white;
-}
-
-#OutputFolderButton:hover {
-    background-color: #45a049;
-    color: white;
-}
-
-#ExecuteButton {
-    background-color: #0e1629;
-    color: white;
-}
-
-#ExecuteButton:hover {
+#SatelliteField:hover {
     background-color: #45a049;
     color: white;
 }
