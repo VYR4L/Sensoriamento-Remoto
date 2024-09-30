@@ -133,8 +133,8 @@ class MainWindow(QMainWindow):
         self.layout.addLayout(buttons_layout)
 
         config_layout = QHBoxLayout()
-        config_layout.addWidget(self.open_api_setup_button_landsat)
         config_layout.addWidget(self.open_api_setup_button_cbers)
+        config_layout.addWidget(self.open_api_setup_button_landsat)
         config_layout.addWidget(self.crop_image_button)
         self.layout.addLayout(config_layout)
 
