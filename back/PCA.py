@@ -5,6 +5,8 @@ import tempfile
 import os
 
 
+list_temp_files = []
+
 def read_band(file_path, band_number):
     '''
     Método para ler uma banda de um arquivo raster.
@@ -12,7 +14,6 @@ def read_band(file_path, band_number):
     :param file_path: Caminho do arquivo raster.
     :param band_number: Número da banda a ser lida.
     '''
-
     ds = gdal.Open(file_path)
     band = ds.GetRasterBand(band_number)
     array = band.ReadAsArray()
@@ -28,7 +29,6 @@ def write_geotiff(output_path, data, geo_transform, projection):
     :param geo_transform: Transformação geométrica.
     :param projection: Projeção.
     '''
-
     driver = gdal.GetDriverByName('GTiff')
     out_raster = driver.Create(output_path, data.shape[2], data.shape[1], data.shape[0], gdal.GDT_Float32)
     out_raster.SetGeoTransform(geo_transform)
@@ -46,9 +46,7 @@ def resize_to_match(reference_ds, target_ds):
     :param reference_ds: Dataset de referência.
     :param target_ds: Dataset a ser redimensionado.
     '''
-
     # Redimensiona a imagem 'target_ds' para ter as mesmas dimensões que 'reference_ds'.
-    # Salva a imagem redimensionada em um arquivo temporário.
     target_path_resized = tempfile.NamedTemporaryFile(suffix='.tif').name
     
     gdal.Warp(
@@ -58,8 +56,28 @@ def resize_to_match(reference_ds, target_ds):
         height=reference_ds.RasterYSize,
         resampleAlg=gdal.GRA_Bilinear  # Algoritmo de reamostragem bilinear
     )
-        
+
+    list_temp_files.append(target_path_resized)   
     return gdal.Open(target_path_resized)
+
+
+def merge_bands_to_multiespectral(bands):
+    '''
+    Método para mesclar várias bandas em uma imagem multiespectral temporária.
+
+    :param bands: Lista de caminhos das bandas a serem mescladas.
+    '''
+    temp_multiespectral_path = tempfile.NamedTemporaryFile(suffix='.tif').name
+    driver = gdal.GetDriverByName('GTiff')
+    band = gdal.Open(bands[0])
+    multiespectral_ds = driver.Create(temp_multiespectral_path, band.RasterXSize, band.RasterYSize, len(bands), gdal.GDT_Float32)
+    multiespectral_ds.SetGeoTransform(band.GetGeoTransform())
+    multiespectral_ds.SetProjection(band.GetProjection())
+    for i, band_path in enumerate(bands):
+        band = gdal.Open(band_path)
+        multiespectral_ds.GetRasterBand(i + 1).WriteArray(band.ReadAsArray())
+
+    return temp_multiespectral_path
 
 
 def pca_fusion_landsat(multispectral_path, panchromatic_path, output_path):
@@ -70,12 +88,18 @@ def pca_fusion_landsat(multispectral_path, panchromatic_path, output_path):
     :param panchromatic_path: Caminho do arquivo pancromático.
     :param output_path: Caminho do arquivo de saída.
     '''
+    # Ler a banda pancromática de alta resolução
+    panchromatic_ds = gdal.Open(panchromatic_path)
 
-    # Ler as bandas multiespectrais
-    X1, geo_transform, projection = read_band(multispectral_path, 1)
-    X2, _, _ = read_band(multispectral_path, 2)
-    X3, _, _ = read_band(multispectral_path, 3)
-    X4, _, _ = read_band(multispectral_path, 4)
+    # Redimensionar as bandas multiespectrais para corresponder à resolução da pancromática
+    multispectral_ds = gdal.Open(multispectral_path)
+    multispectral_ds_resampled = resize_to_match(panchromatic_ds, multispectral_ds)
+    
+    # Ler as bandas multiespectrais redimensionadas
+    X1, geo_transform, projection = read_band(multispectral_ds_resampled.GetDescription(), 1)
+    X2, _, _ = read_band(multispectral_ds_resampled.GetDescription(), 2)
+    X3, _, _ = read_band(multispectral_ds_resampled.GetDescription(), 3)
+    X4, _, _ = read_band(multispectral_ds_resampled.GetDescription(), 4)
     
     # Empilhar as bandas multiespectrais em uma matriz
     X = np.stack((X1, X2, X3, X4), axis=0)
@@ -83,15 +107,11 @@ def pca_fusion_landsat(multispectral_path, panchromatic_path, output_path):
     x_flat = X.reshape(n_bands, -1).T
 
     # Ler a banda pancromática
-    panchromatic_ds = gdal.Open(panchromatic_path)
-    
-    # Redimensionar a banda pancromática para corresponder à resolução multiespectral
-    panchromatic_ds = resize_to_match(gdal.Open(multispectral_path), panchromatic_ds)
     pan = panchromatic_ds.GetRasterBand(1).ReadAsArray()
 
     # Normalizar a banda pancromática com base na banda a ser substituída
     pan = (pan - pan.min()) / (pan.max() - pan.min()) * (X.max() - X.min())
-    
+
     # Centralizar os dados
     scaler = StandardScaler()
     x_flat = scaler.fit_transform(x_flat)
@@ -105,7 +125,7 @@ def pca_fusion_landsat(multispectral_path, panchromatic_path, output_path):
 
     # Substituir o primeiro componente principal pela banda pancromática
     pan_flat = pan.flatten()
-    if pan_flat.shape[0] == Y[:, 0].shape[0]:  # Garantir que os tamanhos são iguais
+    if pan_flat.shape[0] == Y[:, 0].shape[0]:
         Y[:, 0] = pan_flat
 
     # Transformar de volta para o espaço original
@@ -117,6 +137,16 @@ def pca_fusion_landsat(multispectral_path, panchromatic_path, output_path):
 
     # Salvar a imagem resultante
     write_geotiff(output_path, x_fused, geo_transform, projection)
+
+    # Fecha os datasets
+    multispectral_ds, panchromatic_ds, multispectral_ds_resampled = None, None, None
+
+    # Remove os arquivos temporários
+    for temp_file in list_temp_files:
+        os.remove(temp_file)
+
+    # Limpa a lista de arquivos temporários
+    list_temp_files.clear()
 
 
 def pca_fusion_cbers(band_1_path, band_2_path, band_3_path, band_4_path, panchromatic_path, output_path):
@@ -128,25 +158,31 @@ def pca_fusion_cbers(band_1_path, band_2_path, band_3_path, band_4_path, panchro
     :param band_3_path: Caminho da banda 3 (Blue).
     :param band_4_path: Caminho da banda 4 (NIR).
     :param panchromatic_path: Caminho da banda pancromática.
+    :param output_path: Caminho do arquivo de saída.
     '''
+    # Mesclar as bandas em uma imagem multiespectral temporária
+    temp_multiespectral_path = merge_bands_to_multiespectral([band_1_path, band_2_path, band_3_path, band_4_path])
+    list_temp_files.append(temp_multiespectral_path)
 
-    # Ler as bandas multiespectrais
-    X1, geo_transform, projection = read_band(band_1_path, 1)
-    X2, _, _ = read_band(band_2_path, 1)
-    X3, _, _ = read_band(band_3_path, 1)
-    X4, _, _ = read_band(band_4_path, 1)
+    # Ler a banda pancromática de alta resolução
+    panchromatic_ds = gdal.Open(panchromatic_path)
 
+    # Redimensionar as bandas multiespectrais para corresponder à resolução da pancromática
+    multispectral_ds = gdal.Open(temp_multiespectral_path)
+    multispectral_ds_resampled = resize_to_match(panchromatic_ds, multispectral_ds)
 
+    # Ler as bandas multiespectrais redimensionadas
+    X1, geo_transform, projection = read_band(multispectral_ds_resampled.GetDescription(), 1)
+    X2, _, _ = read_band(multispectral_ds_resampled.GetDescription(), 2)
+    X3, _, _ = read_band(multispectral_ds_resampled.GetDescription(), 3)
+    X4, _, _ = read_band(multispectral_ds_resampled.GetDescription(), 4)
+    
     # Empilhar as bandas multiespectrais em uma matriz
     X = np.stack((X1, X2, X3, X4), axis=0)
     n_bands, n_rows, n_cols = X.shape
     x_flat = X.reshape(n_bands, -1).T
 
     # Ler a banda pancromática
-    panchromatic_ds = gdal.Open(panchromatic_path)
-
-    # Redimensionar a banda pancromática para corresponder à resolução multiespectral
-    panchromatic_ds = resize_to_match(gdal.Open(band_1_path), panchromatic_ds)
     pan = panchromatic_ds.GetRasterBand(1).ReadAsArray()
 
     # Normalizar a banda pancromática com base na banda a ser substituída
@@ -154,7 +190,6 @@ def pca_fusion_cbers(band_1_path, band_2_path, band_3_path, band_4_path, panchro
 
     # Centralizar os dados
     scaler = StandardScaler()
-
     x_flat = scaler.fit_transform(x_flat)
 
     # Calcular a matriz de covariância e obter os autovalores e autovetores
@@ -166,7 +201,7 @@ def pca_fusion_cbers(band_1_path, band_2_path, band_3_path, band_4_path, panchro
 
     # Substituir o primeiro componente principal pela banda pancromática
     pan_flat = pan.flatten()
-    if pan_flat.shape[0] == Y[:, 0].shape[0]:  # Garantir que os tamanhos são iguais
+    if pan_flat.shape[0] == Y[:, 0].shape[0]:
         Y[:, 0] = pan_flat
 
     # Transformar de volta para o espaço original
@@ -178,3 +213,13 @@ def pca_fusion_cbers(band_1_path, band_2_path, band_3_path, band_4_path, panchro
 
     # Salvar a imagem resultante
     write_geotiff(output_path, x_fused, geo_transform, projection)
+
+    # Fecha os datasets
+    multispectral_ds, panchromatic_ds, multispectral_ds_resampled, temp_multiespectral_path = None, None, None, None
+
+    # Remove os arquivos temporários
+    for temp_file in list_temp_files:
+        os.remove(temp_file)
+
+    # Limpa a lista de arquivos temporários
+    list_temp_files.clear()

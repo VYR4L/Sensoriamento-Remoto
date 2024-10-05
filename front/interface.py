@@ -497,7 +497,6 @@ class SetUpApiLandsat(QWidget):
         try:
             download_landsat(
                 self.account_field.text(),
-                self.satellite_field.currentText(),
                 self.id_field.text(),
                 self.area_of_interest_field.text().split(","),
                 self.output_folder_field_images.text()

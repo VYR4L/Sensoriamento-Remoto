@@ -1,9 +1,22 @@
 from osgeo import gdal
 import numpy as np
-import os
 import tempfile
+import os
+
+
+list_temp_files = []
+
 
 def rgb_to_hsv(r, g, b):
+    """
+    Método para converter uma imagem RGB para HSV.	
+
+    :param r: Banda Vermelha.
+    :param g: Banda Verde.
+    :param b: Banda Azul.
+    """
+
+
     # Converte RGB para HSV manualmente
     r = r / 255.0
     g = g / 255.0
@@ -46,6 +59,11 @@ def rgb_to_hsv(r, g, b):
 
 
 def hsv_to_rgb(h, s, v):
+    """
+    Método para converter uma imagem HSV para RGB.
+
+    """
+
     # Converte HSV para RGB manualmente
     h = h / 255.0
     s = s / 255.0
@@ -56,36 +74,42 @@ def hsv_to_rgb(h, s, v):
     q = v * (1.0 - f * s)
     t = v * (1.0 - (1.0 - f) * s)
 
-    i = i % 6
+    i = i % 6  
     r = np.zeros_like(h)
     g = np.zeros_like(h)
     b = np.zeros_like(h)
 
-    r[i == 0] = v[i == 0]
-    g[i == 0] = t[i == 0]
-    b[i == 0] = p[i == 0]
-    r[i == 1] = q[i == 1]
-    g[i == 1] = v[i == 1]
-    b[i == 1] = p[i == 1]
-    r[i == 2] = p[i == 2]
-    g[i == 2] = v[i == 2]
-    b[i == 2] = t[i == 2]
-    r[i == 3] = p[i == 3]
-    g[i == 3] = q[i == 3]
-    b[i == 3] = v[i == 3]
-    r[i == 4] = t[i == 4]
-    g[i == 4] = p[i == 4]
-    b[i == 4] = v[i == 4]
-    r[i == 5] = v[i == 5]
-    g[i == 5] = p[i == 5]
-    b[i == 5] = q[i == 5]
+    # Atribuir valores de RGB com base no valor de 'i'
+    r[i == 0] = v[i == 0]  # Se i == 0, então r = v
+    g[i == 0] = t[i == 0]  # Se i == 0, então g = t
+    b[i == 0] = p[i == 0]  # Se i == 0, então b = p
+    r[i == 1] = q[i == 1]  # Se i == 1, então r = q
+    g[i == 1] = v[i == 1]  # Se i == 1, então g = v
+    b[i == 1] = p[i == 1]  # Se i == 1, então b = p
+    r[i == 2] = p[i == 2]  # Se i == 2, então r = p
+    g[i == 2] = v[i == 2]  # Se i == 2, então g = v
+    b[i == 2] = t[i == 2]  # Se i == 2, então b = t
+    r[i == 3] = p[i == 3]  # Se i == 3, então r = p
+    g[i == 3] = q[i == 3]  # Se i == 3, então g = q
+    b[i == 3] = v[i == 3]  # Se i == 3, então b = v
+    r[i == 4] = t[i == 4]  # Se i == 4, então r = t
+    g[i == 4] = p[i == 4]  # Se i == 4, então g = p
+    b[i == 4] = v[i == 4]  # Se i == 4, então b = v
+    r[i == 5] = v[i == 5]  # Se i == 5, então r = v
+    g[i == 5] = p[i == 5]  # Se i == 5, então g = p
+    b[i == 5] = q[i == 5]  # Se i == 5, então b = q
 
     return r * 255, g * 255, b * 255
 
 
 def resize_to_match(reference_ds, target_ds):
-    # Redimensiona a imagem 'target_ds' para ter as mesmas dimensões que 'reference_ds'.
-    # Salva a imagem redimensionada em um arquivo temporário.
+    """
+    Método para redimensionar a imagem 'target_ds' para ter as mesmas dimensões que 'reference_ds'.
+    Salva a imagem redimensionada em um arquivo temporário.
+
+    :param reference_ds: Dataset de referência.
+    :param target_ds: Dataset que será redimensionado.
+    """
     target_path_resized = tempfile.NamedTemporaryFile(suffix='.tif', delete=True).name
     
     gdal.Warp(
@@ -96,6 +120,7 @@ def resize_to_match(reference_ds, target_ds):
         resampleAlg=gdal.GRA_Bilinear  # Algoritmo de reamostragem bilinear
     )
     
+    list_temp_files.append(target_path_resized)
     return gdal.Open(target_path_resized)
 
 
@@ -143,7 +168,14 @@ def colorimetric_fusion_landsat(multispectral_path, panchromatic_path, output_pa
     fused_ds.GetRasterBand(1).WriteArray(r)
     fused_ds.GetRasterBand(2).WriteArray(g)
     fused_ds.GetRasterBand(3).WriteArray(b)
-    fused_ds = None
+
+    panchromatic_ds, fused_ds = None, None
+
+    for temp_file in list_temp_files:
+        os.remove(temp_file)
+
+    # Limpa a lista de arquivos temporários
+    list_temp_files.clear()
 
 
 def colorimetric_fusion_cbers(band_1_path, band_2_path, band_3_path, panchromatic_path, output_path):
@@ -157,35 +189,41 @@ def colorimetric_fusion_cbers(band_1_path, band_2_path, band_3_path, panchromati
     :param output_path: Caminho onde a imagem resultante será salva.
     '''
 
+    # Abrir as bandas multiespectrais e a banda pancromática
     blue_ds = gdal.Open(band_1_path)
     green_ds = gdal.Open(band_2_path)
     red_ds = gdal.Open(band_3_path)
     panchromatic_ds = gdal.Open(panchromatic_path)
 
+    # Redimensionar as bandas multiespectrais para corresponder à pancromática
     blue_ds = resize_to_match(panchromatic_ds, blue_ds)
     green_ds = resize_to_match(panchromatic_ds, green_ds)
     red_ds = resize_to_match(panchromatic_ds, red_ds)
 
+    # Ler as bandas multiespectrais e a banda pancromática
     blue = blue_ds.GetRasterBand(1).ReadAsArray()
     green = green_ds.GetRasterBand(1).ReadAsArray()
     red = red_ds.GetRasterBand(1).ReadAsArray()
 
+    # Ler a banda pancromática
     pan = panchromatic_ds.GetRasterBand(1).ReadAsArray()
     
     # Normalize o pano
     pan_min = pan.min()
     pan_max = pan.max()
 
+    # Normalizar a banda pancromática
     if pan_max - pan_min == 0:
-        # Isso significa que todos os valores de 'pan' são iguais
-        pan[:] = 0  # Ou use outro valor padrão como 255 ou um valor médio
+        pan[:] = 0 
     else:
         pan = (pan - pan_min) / (pan_max - pan_min) * 255
 
+    # Converter RGB para HSV
     h, s, v = rgb_to_hsv(red, green, blue)
     v = pan
     red, green, blue = hsv_to_rgb(h, s, v)
 
+    # Salvar a imagem resultante
     driver = gdal.GetDriverByName('GTiff')
     fused_ds = driver.Create(output_path, blue_ds.RasterXSize, blue_ds.RasterYSize, 3, gdal.GDT_Byte)
     fused_ds.SetProjection(blue_ds.GetProjection())
@@ -193,4 +231,14 @@ def colorimetric_fusion_cbers(band_1_path, band_2_path, band_3_path, panchromati
     fused_ds.GetRasterBand(1).WriteArray(red)
     fused_ds.GetRasterBand(2).WriteArray(green)
     fused_ds.GetRasterBand(3).WriteArray(blue)
+
+    # Libera os datasets
+    red_ds, green_ds, blue_ds, panchromatic_ds, fused_ds = None, None, None, None, None
+    red, green, blue, pan = None, None, None, None
+
+    for temp_file in list_temp_files:
+        os.remove(temp_file)
+
+    # Limpa a lista de arquivos temporários
+    list_temp_files.clear()
 
